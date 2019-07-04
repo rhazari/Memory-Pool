@@ -27,7 +27,7 @@ class StringClass {
     std::string *p_str;
 public:
     StringClass() {
-        p_str = new std::string("Initializer string\n");
+        p_str = new std::string("Initializer String\n");
     }
 
     std::string getValue() {
@@ -47,60 +47,68 @@ public:
 class MemoryPoolTest : public ::testing::Test
 {
 public:
-    MemoryPool<IntClass> pool{ 4 };
-    IntClass *o1 = nullptr;
+    MemoryPool<IntClass> pool1{ 4 };
+    MemoryPool<StringClass> pool2{ 4 };
+    
+    IntClass *ptr1 = nullptr;
+    StringClass *ptr2 = nullptr;
 
     void SetUp() override {
-        o1 = pool.alloc();
+        ptr1 = pool1.alloc();
+        ptr2 = pool2.alloc();
     }
 
     void TearDown() override {
-        pool.free(o1);
+        pool1.free(ptr1);
+        pool2.free(ptr2);
     }
 };
 
 TEST_F(MemoryPoolTest, testObjectType)
 {
-    EXPECT_EQ(typeid(*o1), typeid(IntClass));
+    EXPECT_EQ(typeid(*ptr1), typeid(IntClass));
+    EXPECT_EQ(typeid(*ptr2), typeid(StringClass));
 }
 
 TEST_F(MemoryPoolTest, testGetter)
 {
-    EXPECT_EQ(o1->getValue(), 10);
+    EXPECT_EQ(ptr1->getValue(), 10);
+    EXPECT_EQ(ptr2->getValue(), "Initializer String\n");
 }
 
 TEST_F(MemoryPoolTest, testSetter)
 {
-    o1->setValue(20);
-    EXPECT_EQ(o1->getValue(), 20);
+    ptr1->setValue(20);
+    EXPECT_EQ(ptr1->getValue(), 20);
+
+    ptr2->setValue("Overwriting the Initialized String\n");
+    EXPECT_EQ(ptr2->getValue(), "Overwriting the Initialized String\n");
 }
 
 TEST_F(MemoryPoolTest, testMultipleObjectCreation)
 {
-    std::vector<IntClass*> vec;
-    for(int k = 0; k < 10; ++k){
-        auto* obj = pool.alloc();
-        EXPECT_EQ(typeid(*obj), typeid(IntClass));
-        vec.push_back(obj);
-    }
+    {
+        std::vector<IntClass*> vec;
+        for(int k = 0; k < 10; ++k){
+            auto* obj = pool1.alloc();
+            EXPECT_EQ(typeid(*obj), typeid(IntClass));
+            vec.push_back(obj);
+        }
 
-    for(auto obj: vec){
-        pool.free(obj);
+        for(auto obj: vec){
+            pool1.free(obj);
+        }
+    }
+    {
+        std::vector<StringClass*> vec;
+        for(int k = 0; k < 10; ++k){
+            auto* obj = pool2.alloc();
+            EXPECT_EQ(typeid(*obj), typeid(StringClass));
+            vec.push_back(obj);
+        }
+
+        for(auto obj: vec){
+            pool2.free(obj);
+        }
     }
 }
-
-// #include "gmock/gmock.h"
-
-// class MockIntClass: public IntClass{
-// public:
-//     MOCK_METHOD0(Die, void());
-//     virtual ~MockIntClass() { Die(); }
-// };
-
-// TEST(MockTest, testDestructorCall)
-// {
-//     MockIntClass* foo = new MockIntClass;
-//     {
-//         EXPECT_CALL(*foo, Die());
-//     }
-// }
