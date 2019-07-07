@@ -10,14 +10,17 @@
 template <class ELEM_TYPE>
 class MemoryPool {
 public:
+    // Pre-allocate a thread pool with a fixed number of threads
     explicit MemoryPool(std::size_t numThreads) {
         start(numThreads);
     }
 
+    // Terminate the thead pool. Join all the threads in the pool
     ~MemoryPool() {
         stop();
     }
 
+    // Return a pointer to a newly created object
     ELEM_TYPE * alloc() {
         auto f = enqueue([=] {
             auto* ptr = new ELEM_TYPE();
@@ -26,6 +29,7 @@ public:
         return f.get();
     }
 
+    // Delete the object
     void free(ELEM_TYPE* ptr) {
         auto f = enqueue([=] {
             delete ptr;

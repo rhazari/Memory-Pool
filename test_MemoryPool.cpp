@@ -38,7 +38,7 @@ public:
         *p_str = str;
     }
 
-    ~StringClass() {
+    virtual ~StringClass() {
         std::cout << "Destructor called for StringClass" << "\n";
         delete p_str;
     }
