@@ -15,10 +15,8 @@ public:
     }
 };
 
-std::mutex m_mutex;
 
 T* alloc(){
-    // std::lock_guard<std::mutex> guard(m_mutex);
     auto* obj = new T();
     return obj;
 }
